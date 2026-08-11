@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Event {
@@ -22,6 +23,9 @@ export class Event {
 
   @Column()
   category: string;
+
+  @ManyToOne(() => User, (user) => user.events, { nullable: true })
+  author: User;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Carrera } from './carrera.entity';
+import { Event } from '../../events/entities/event.entity';
 
 @Entity()
 export class User {
@@ -13,4 +15,10 @@ export class User {
 
   @Column({ default: 'Estudiante' })
   role: string;
+
+  @ManyToOne(() => Carrera, (carrera) => carrera.usuarios, { nullable: true })
+  carrera: Carrera;
+
+  @OneToMany(() => Event, (event) => event.author)
+  events: Event[];
 }

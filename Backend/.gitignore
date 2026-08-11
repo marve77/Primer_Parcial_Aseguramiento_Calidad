@@ -16,7 +16,7 @@ pnpm-debug.log*
 .eslintcache
 
 # dotenv environment variables file
-.env
+/.env
 .env.test
 
 # Build outputs

@@ -4,59 +4,51 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: umg_postgres
-    environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-umg_db}
+    env_file:
+      - .env
     ports:
-      - "5432:5432"
+      - "5433:5433"
+    command: -p 5433
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - umg_network
 
   backend:
-    build: 
-      context: ./Backend
-      dockerfile: Dockerfile
+    image: marve77j/actividsades-backend:v1.1
     container_name: umg_backend
-    ports:
-      - "3000:3000"
+    env_file:
+      - .env
     environment:
       DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-umg_db}
-      JWT_SECRET: ${JWT_SECRET:-super-secret-key}
+      DB_PORT: 5433
+    ports:
+      - "3010:3000"
     depends_on:
       - postgres
     networks:
       - umg_network
+      - proxy_network
     volumes:
-      - ./Backend:/usr/src/app
-      - /usr/src/app/node_modules
+      - backend_uploads:/app/uploads
 
   frontend:
-    build: 
-      context: ./Frontend
-      dockerfile: Dockerfile
+    image: marve77j/actividades-umg:v1.1
     container_name: umg_frontend
-    ports:
-      - "3001:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://backend:3000
+    env_file:
+      - .env
     depends_on:
       - backend
     networks:
       - umg_network
-    volumes:
-      - ./Frontend:/app
-      - /app/node_modules
+      - proxy_network
 
 networks:
   umg_network:
     driver: bridge
+  proxy_network:
+    external: true
 
 volumes:
   pgdata:
+  backend_uploads:
