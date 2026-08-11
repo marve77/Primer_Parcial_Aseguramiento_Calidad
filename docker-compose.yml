@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: umg_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-umg_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - umg_network
+
+  backend:
+    build: 
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: umg_backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-umg_db}
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key}
+    depends_on:
+      - postgres
+    networks:
+      - umg_network
+    volumes:
+      - ./Backend:/usr/src/app
+      - /usr/src/app/node_modules
+
+  frontend:
+    build: 
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: umg_frontend
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:3000
+    depends_on:
+      - backend
+    networks:
+      - umg_network
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+
+networks:
+  umg_network:
+    driver: bridge
+
+volumes:
+  pgdata:
